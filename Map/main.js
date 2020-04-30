@@ -150,18 +150,83 @@ var data = [
   [-110.38652600942083, 35.132946470357446],
   [-88.67007983633772, 34.66734476291739],
 ];
-var width = 1000,
-  height = 600,
+var mapping = {
+  AL: "Alabama",
+  AK: "Alaska",
+  AS: "American Samoa",
+  AZ: "Arizona",
+  AR: "Arkansas",
+  CA: "California",
+  CO: "Colorado",
+  CT: "Connecticut",
+  DE: "Delaware",
+  DC: "District Of Columbia",
+  FM: "Federated States Of Micronesia",
+  FL: "Florida",
+  GA: "Georgia",
+  GU: "Guam",
+  HI: "Hawaii",
+  ID: "Idaho",
+  IL: "Illinois",
+  IN: "Indiana",
+  IA: "Iowa",
+  KS: "Kansas",
+  KY: "Kentucky",
+  LA: "Louisiana",
+  ME: "Maine",
+  MH: "Marshall Islands",
+  MD: "Maryland",
+  MA: "Massachusetts",
+  MI: "Michigan",
+  MN: "Minnesota",
+  MS: "Mississippi",
+  MO: "Missouri",
+  MT: "Montana",
+  NE: "Nebraska",
+  NV: "Nevada",
+  NH: "New Hampshire",
+  NJ: "New Jersey",
+  NM: "New Mexico",
+  NY: "New York",
+  NC: "North Carolina",
+  ND: "North Dakota",
+  MP: "Northern Mariana Islands",
+  OH: "Ohio",
+  OK: "Oklahoma",
+  OR: "Oregon",
+  PW: "Palau",
+  PA: "Pennsylvania",
+  PR: "Puerto Rico",
+  RI: "Rhode Island",
+  SC: "South Carolina",
+  SD: "South Dakota",
+  TN: "Tennessee",
+  TX: "Texas",
+  UT: "Utah",
+  VT: "Vermont",
+  VI: "Virgin Islands",
+  VA: "Virginia",
+  WA: "Washington",
+  WV: "West Virginia",
+  WI: "Wisconsin",
+  WY: "Wyoming",
+};
+var csv = [];
+d3.csv("../test.csv").then((out) => {
+  out.forEach((d) => {
+    csv.push([d.Lng, d.Lat, d.State]);
+  });
+});
+var width = 975,
+  height = 610,
   centered;
-
-var projection = d3.geo
-  .albersUsa()
-  .scale(1070)
+const projection = d3
+  .geoAlbersUsa()
+  .scale(1300)
   .translate([width / 2, height / 2]);
-
-var path = d3.geo.path().projection(projection);
-
-var svg = d3
+const path = d3.geoPath();
+var scatterPlot1;
+const svg = d3
   .select("body")
   .append("svg")
   .attr("width", width)
@@ -169,19 +234,11 @@ var svg = d3
   .style("border-color", "black")
   .style("border-style", "solid")
   .style("border-width", "0.5px");
-
-svg
-  .append("rect")
-  .attr("class", "background")
-  .attr("width", width)
-  .attr("height", height)
-  .on("click", clicked);
-
-var g = svg.append("g");
+const g = svg.append("g");
 var scatterPlot = svg.append("g");
-d3.json("us.json", function (error, us) {
-  if (error) throw error;
-
+var statePlot;
+d3.json("./USA-states.json").then((us) => {
+  console.log(us);
   g.append("g")
     .attr("id", "states")
     .selectAll("path")
@@ -192,36 +249,65 @@ d3.json("us.json", function (error, us) {
     .on("click", clicked);
 
   g.append("path")
-    .datum(
-      topojson.mesh(us, us.objects.states, function (a, b) {
-        return a !== b;
-      })
-    )
+    .datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b))
     .attr("id", "state-borders")
     .attr("d", path);
+  scatterPlot1 = svg
+    .append("g")
+    .attr("fill", "brown")
+    .selectAll("circle")
+    .data(csv)
+    .join("circle")
+    .attr("transform", (d) => `translate(${projection([d[0], d[1]])})`)
+    .attr("r", 1);
 });
-scatterPlot
-  .attr("id","plot")
-  .selectAll("circle")
-  .data(data)
-  .enter()
-  .append("circle")
-  .attr("r", 5)
-  .attr("fill", "red")
-  .attr("transform", function (d) {
-    return "translate(" + projection([d[0], d[1]]) + ")";
-  });
-
 function clicked(d) {
   var x, y, k;
-    // scatterPlot.remove()
+  console.log(d);
   if (d && centered !== d) {
+    scatterPlot1.attr("visibility", "hidden");
+    var filteredset = csv.filter((ele) => {
+      if (mapping[ele[2]] == d.properties.name) {
+        return ele;
+      }
+    });
+    // statePlot = svg.append("g")
+    // console.log(filteredset);
+    const project = d3
+      .geoAlbers()
+      // .center([0, 15]) // set centre to further North as we are cropping more off bottom of map
+      .scale(10000) // scale to fit group width
+      // .translate([width / 2, height / 2]) // ensure centred in group
+      .fitExtent(
+        [
+          [0, 0],
+          [width, height],
+        ],
+        d
+      );
+    // var path = d3.geoPath().projection(project);
+    if (statePlot != undefined) statePlot.remove();
+    statePlot = svg
+      .append("g")
+      .attr("fill", "blue")
+      .selectAll("circle")
+      .data(filteredset)
+      .join("circle")
+      .attr("transform", (d) => {
+        console.log(project([d[0],d[1]]));
+        return `translate(${project([d[0], d[1]])})`;
+      })
+      .attr("r", 5);
     var centroid = path.centroid(d);
     x = centroid[0];
     y = centroid[1];
     k = 4;
     centered = d;
   } else {
+    setTimeout(() => {
+      scatterPlot1.attr("visibility", "visible");
+    }, 750);
+    statePlot.remove();
     x = width / 2;
     y = height / 2;
     k = 1;

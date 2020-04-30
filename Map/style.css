@@ -6,7 +6,9 @@
 #states {
     fill: #aaa;
 }
-
+path:hover{
+	fill-opacity: .7;
+}
 #states .active {
     fill: orange;
 }
