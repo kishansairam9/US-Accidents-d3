@@ -1,0 +1,38 @@
+body {
+  font: 10px sans-serif;
+}
+/* 
+#weekly text {
+  font-size: 8px !important
+} */
+
+#weather text, #weather tspan{
+  font-size: 8px !important;
+}
+
+.weekly-axis path,
+.weekly-axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.weekly-line {
+  fill: none;
+  stroke: steelblue;
+  stroke-width: 1.5px;
+}
+
+.weekly-dot {
+  fill: #ffab00;
+  stroke: #fff;
+}
+
+.weekly-focus circle {
+  fill: none;
+  stroke: steelblue;
+}
+
+.weekly-text {
+  font: 7px
+}
