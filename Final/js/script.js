@@ -1,4 +1,19 @@
-d3.csv("cleaned.csv").then(function(out) {
+$(document).ready(function() {
+  $('.ui.dropdown').dropdown();
+  $('.sidebar-menu-toggler').on('click', function() {
+    var target = $(this).data('target');
+    $(target)
+      .sidebar({
+        dinPage: true,
+        transition: 'overlay',
+        mobileTransition: 'overlay'
+      })
+      .sidebar('toggle');
+  });
+});
+
+
+d3.csv("../../cleaned.csv").then(function(out) {
 
   const tooltip = d3.select("body")
   .append("div")
@@ -11,9 +26,9 @@ d3.csv("cleaned.csv").then(function(out) {
 
   // Weekly - line chart plot by days of week
   { 
-    const margin = {top: 30, right: 20, bottom: 50, left: 80},
+    const margin = {top: 60, right: 20, bottom: 50, left: 80},
     width = 450 - margin.left - margin.right,
-    height = 210 - margin.top - margin.bottom;
+    height = 250 - margin.top - margin.bottom;
 
   const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
 
@@ -122,15 +137,16 @@ d3.csv("cleaned.csv").then(function(out) {
     .attr("class", "weekly-values") 
     .attr("x", d => {return x(d.Day) + x.bandwidth()/2})
           .attr("y", d => {return y(d.Accidents) - 14})
+          .attr("font-size", "10px")
           .style("text-anchor", "middle")
           .text(d => d.Accidents)
   }
 
   // Weather - pie chart
   {
-    const margin = {top: 30, right: 30, bottom: 30, left: 30},
-    width = 300 - margin.left - margin.right,
-    height = 300 - margin.top - margin.bottom;
+    const margin = {top: 10, right: 10, bottom: 10, left: 10},
+    width = 230 - margin.left - margin.right,
+    height = 230 - margin.top - margin.bottom;
 
     const svg = d3.select("#weather")
     .attr("width", width + margin.left + margin.right)
@@ -230,7 +246,7 @@ d3.csv("cleaned.csv").then(function(out) {
   // Time of day - bar plot
   {
     const margin = {top: 20, right: 20, bottom: 50, left: 80},
-    width = 500 - margin.left - margin.right,
+    width = 450 - margin.left - margin.right,
     height = 250 - margin.top - margin.bottom;
 
 const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
@@ -301,8 +317,6 @@ const barPlot = d3.select("#time_of_day")
       .attr("font-size", "10px")
           .style("text-anchor", "middle")
           .text(`Hour`)
-
-      console.log(data)
 
     const bars = barPlot.selectAll('rect')
       .data(data)
@@ -453,7 +467,7 @@ const barPlot = d3.select("#time_of_day")
       .value((d) => d.value);
     
     let totalAccidentsByStates;
-    d3.csv("test.csv").then((out) => {
+    d3.csv("../../test.csv").then((out) => {
       out.forEach((d) => {
         csv.push([d.Lng, d.Lat, d.State, d.Severity]);
       });
@@ -472,15 +486,12 @@ const barPlot = d3.select("#time_of_day")
         .select("#map")
         .attr("width", width)
         .attr("height", height)
-        .style("border-color", "black")
-        .style("border-style", "solid")
-        .style("border-width", "0.5px")
-        .attr("transform", "scale(0.75)");
+        .attr("transform", "translate(-130, -80) scale(0.7)")
       const g = svg.append("g");
       let scatterPlot = svg.append("g");
       let statePlot;
       setTimeout(() => {
-        d3.json("./USA-states.json").then((us) => {
+        d3.json("../../USA-states.json").then((us) => {
           let color = d3
             .scaleQuantile()
             .domain(Array.from(totalAccidentsByStates, (d) => d[1]))
@@ -490,11 +501,11 @@ const barPlot = d3.select("#time_of_day")
             .legendColor()
             .scale(color)
             .labelFormat(d3.format("d"))
-            .shapeWidth(30)
+            .shapeWidth(25)
             .labels(d3.legendHelpers.thresholdLabels)
             // .orient('horizontal')
             .title("Number of Accidents per state")
-            .titleWidth(125);
+            .titleWidth(115);
           svg
             .append("g")
             .attr(
