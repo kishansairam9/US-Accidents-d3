@@ -16,7 +16,7 @@ d3.csv("../../cleaned.csv").then(function(tot) {
     out.push([])
   }
 
-  const inp = _.sample(tot, 100000);
+  const inp = _.sample(tot, tot.length/2);
 
   inp.forEach(function (d) {
     date = parseDate(d.Time)
