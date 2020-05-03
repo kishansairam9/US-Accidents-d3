@@ -1,19 +1,4 @@
-$(document).ready(function() {
-  $('.ui.dropdown').dropdown();
-  $('.sidebar-menu-toggler').on('click', function() {
-    var target = $(this).data('target');
-    $(target)
-      .sidebar({
-        dinPage: true,
-        transition: 'overlay',
-        mobileTransition: 'overlay'
-      })
-      .sidebar('toggle');
-  });
-});
-
-
-d3.csv("../../cleaned.csv").then(function(out) {
+d3.csv("../../cleaned.csv").then(function(inp) {
 
   const tooltip = d3.select("body")
   .append("div")
@@ -24,9 +9,21 @@ d3.csv("../../cleaned.csv").then(function(out) {
   .style("color", "#FFF")
   .style("padding", "5px")
 
+  const out = []
+  for(let i=0; i<12; i++) {
+    out.push([])
+  }
+
+  const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
+
+  inp.forEach(function (d) {
+    date = parseDate(d.Time)
+    out[date.getMonth()].push(d);
+  })
+
   // Table of data
   {
-    const show = _.sample(out, 100);
+    const show = _.sample(inp, 100);
 
     let tr = d3.select("tbody").selectAll("tr")
       .data(show)
@@ -40,7 +37,8 @@ d3.csv("../../cleaned.csv").then(function(out) {
   }
 
   // Weekly - line chart plot by days of week
-  { 
+  const plotWeekly = (out) => { 
+    d3.select("#weekly").selectAll("*").remove();
     const margin = {top: 60, right: 20, bottom: 50, left: 80},
     width = 450 - margin.left - margin.right,
     height = 250 - margin.top - margin.bottom;
@@ -158,7 +156,8 @@ d3.csv("../../cleaned.csv").then(function(out) {
   }
 
   // Weather - pie chart
-  {
+  const plotWeather = (out) => {
+    d3.select("#weather").selectAll("*").remove();
     const margin = {top: 10, right: 10, bottom: 10, left: 10},
     width = 230 - margin.left - margin.right,
     height = 230 - margin.top - margin.bottom;
@@ -259,12 +258,11 @@ d3.csv("../../cleaned.csv").then(function(out) {
   }
 
   // Time of day - bar plot
-  {
+  const plotTime = (out) => {
+    d3.select("#time_of_day").selectAll("*").remove();
     const margin = {top: 20, right: 20, bottom: 50, left: 80},
     width = 450 - margin.left - margin.right,
     height = 250 - margin.top - margin.bottom;
-
-const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
 
 const barPlot = d3.select("#time_of_day")
     .attr("width", width + margin.left + margin.right)
@@ -348,61 +346,8 @@ const barPlot = d3.select("#time_of_day")
   }
 
   // Map 
-  {
-    let avgCoordinates = {
-      Alaska: [-152.2683, 61.385],
-      Alabama: [-86.8073, 32.799],
-      Arkansas: [-92.3809, 34.9513],
-      Arizona: [-111.3877, 33.7712],
-      California: [-119.7462, 36.17],
-      Colorado: [-105.3272, 39.0646],
-      Connecticut: [-72.7622, 41.5834],
-      Delaware: [-75.5148, 39.3498],
-      Florida: [-81.717, 27.8333],
-      Georgia: [-83.6487, 32.9866],
-      Hawaii: [-157.5311, 21.1098],
-      Iowa: [-93.214, 42.0046],
-      Idaho: [-114.5103, 44.2394],
-      Illinois: [-89.0022, 40.3363],
-      Indiana: [-86.2604, 39.8647],
-      Kansas: [-96.8005, 38.5111],
-      Kentucky: [-84.6514, 37.669],
-      Louisiana: [-91.8749, 31.1801],
-      Massachusetts: [-71.5314, 42.2373],
-      Maryland: [-76.7902, 39.0724],
-      Maine: [-69.3977, 44.6074],
-      Michigan: [-84.5603, 43.3504],
-      Minnesota: [-93.9196, 45.7326],
-      Missouri: [-92.302, 38.4623],
-      Mississippi: [-89.6812, 32.7673],
-      Montana: [-110.3261, 46.9048],
-      "North Carolina": [-79.8431, 35.6411],
-      "North Dakota": [-99.793, 47.5362],
-      Nebraska: [-98.2883, 41.1289],
-      "New Hampshire": [-71.5653, 43.4108],
-      "New Jersey": [-74.5089, 40.314],
-      "New Mexico": [-106.2371, 34.8375],
-      Nevada: [-117.1219, 38.4199],
-      "New York": [-74.9384, 42.1497],
-      Ohio: [-82.7755, 40.3736],
-      Oklahoma: [-96.9247, 35.5376],
-      Oregon: [-122.1269, 44.5672],
-      Pennsylvania: [-77.264, 40.5773],
-      "Rhode Island": [-71.5101, 41.6772],
-      "South Carolina": [-80.9066, 33.8191],
-      "South Dakota": [-99.4632, 44.2853],
-      Tennessee: [-86.7489, 35.7449],
-      Texas: [-97.6475, 31.106],
-      Utah: [-111.8535, 40.1135],
-      Virginia: [-78.2057, 37.768],
-      Vermont: [-72.7093, 44.0407],
-      Washington: [-121.5708, 47.3917],
-      Wisconsin: [-89.6385, 44.2563],
-      "West Virginia": [-80.9696, 38.468],
-      Wyoming: [-107.2085, 42.7475],
-      "District of Columbia": [-77.0268, 38.8974],
-      "Puerto Rico": [-66.628, 18.2491],
-    };
+  const plotMapMonth = (out) => {
+    d3.select("#map").selectAll("circle").remove();
     let mapping = {
       AL: "Alabama",
       AK: "Alaska",
@@ -464,6 +409,15 @@ const barPlot = d3.select("#time_of_day")
       WI: "Wisconsin",
       WY: "Wyoming",
     };
+    byStates = {}
+    for(st in mapping) {
+      byStates[mapping[st]] = out.filter((ele) => {
+        if (mapping[ele.State] == mapping[st]) {
+          return ele;
+        }
+      });
+    }
+
     let width = 975,
       height = 610,
       centered;
@@ -482,7 +436,7 @@ const barPlot = d3.select("#time_of_day")
       .value((d) => d.value);
     
     let totalAccidentsByStates;
-    d3.csv("../../test.csv").then((out) => {
+    // d3.csv("../../test.csv").then((out) => {
       out.forEach((d) => {
         csv.push([d.Lng, d.Lat, d.State, d.Severity]);
       });
@@ -511,7 +465,7 @@ const barPlot = d3.select("#time_of_day")
             .scaleQuantile()
             .domain(Array.from(totalAccidentsByStates, (d) => d[1]))
             .range(d3.schemeBlues[8]);
-          console.log(us);
+          // console.log(us);
           let legend = d3
             .legendColor()
             .scale(color)
@@ -558,16 +512,16 @@ const barPlot = d3.select("#time_of_day")
             .attr("r", 1);
         });
       }, 500);
+    
+      // console.log(byStates)
       function clicked(d) {
         let x, y, k;
-        console.log(d);
         if (d && centered !== d) {
           scatterPlot1.attr("visibility", "hidden");
-          let filteredset = out.filter((ele) => {
-            if (mapping[ele.State] == d.properties.name) {
-              return ele;
-            }
-          });
+          let filteredset = byStates[d.properties.name]
+          plotTime(filteredset)
+          plotWeather(filteredset)
+          plotWeekly(filteredset)
           let centroid = path.centroid(d);
           x = centroid[0];
           y = centroid[1];
@@ -729,8 +683,54 @@ const barPlot = d3.select("#time_of_day")
           )
           .style("stroke-width", 1.5 / k + "px");
       }
-    });
+    // });
     
   }
+
+
+  let stepSlider = document.getElementById('slider');
+
+  noUiSlider.create(stepSlider, {
+      start: [1],
+      step: 1,
+      range: {
+          'min': [1],
+          'max': [12]
+      },
+      pips: {
+        mode: 'steps',
+        density: 3,
+        format: wNumb({
+            decimals: 0,
+        })
+    }
+  });
+
+  const wholePlot = () => {
+    plotTime(inp)
+    plotWeather(inp)
+    plotWeekly(inp)
+  }
+
+  const updatePlots = (mon) => {
+    plotMapMonth(out[mon])
+    plotTime(out[mon])
+    plotWeather(out[mon])
+    plotWeekly(out[mon])
+  }
+  updatePlots(0)
+
+  let stepSliderValueElement = document.getElementById('month');
+
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
+  ];
+
+  stepSlider.noUiSlider.on('update', function (values, handle) {
+      const mon = values[handle]-1;
+      stepSliderValueElement.innerHTML = monthNames[mon];
+      updatePlots(mon);
+  });
+  
 
 });
