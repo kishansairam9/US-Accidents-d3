@@ -10,9 +10,9 @@
   margin-top: -200px !important
 }
 
-#weather {
+/* #weather {
   margin-top: 130px !important;
-}
+} */
 
 body {
   font-family: var(--font-family) !important;
@@ -107,4 +107,12 @@ fill-opacity: .7;
   stroke-linejoin: round;
   stroke-linecap: round;
   pointer-events: none;
+}
+
+.vis {
+  opacity: 1 !important;
+}
+
+.hid {
+  opacity: 0 !important;
 }

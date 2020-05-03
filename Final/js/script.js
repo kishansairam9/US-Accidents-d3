@@ -8,14 +8,14 @@ const tooltip = d3.select("body")
   .style("padding", "5px")
 
   const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
-// Monthly - line chart
+
+  // Monthly - line chart
 const plotMonthly = (out) => { 
   d3.select("#monthly").selectAll("*").remove();
   const margin = {top: 60, right: 20, bottom: 50, left: 80},
-  width = 450 - margin.left - margin.right,
+  width = 500 - margin.left - margin.right,
   height = 250 - margin.top - margin.bottom;
 
-const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
 
 const svg = d3.select("#monthly")
   .attr("width", width + margin.left + margin.right)
@@ -109,7 +109,7 @@ const line = d3.line()
   .attr("y", height + 35)
   .attr("font-size", "10px")
         .style("text-anchor", "middle")
-        .text(`Weekday`)
+        .text(`Month`)
 
 svg.append("g")
     .attr("class", "x weekly-axis")
@@ -185,8 +185,8 @@ const createPlots = (out) => {
   // Weekly - line chart plot by days of week
   const plotWeekly = (out) => { 
     d3.select("#weekly").selectAll("*").remove();
-    const margin = {top: 60, right: 20, bottom: 50, left: 80},
-    width = 450 - margin.left - margin.right,
+    const margin = {top: 30, right: 20, bottom: 50, left: 55},
+    width = 250 - margin.left - margin.right,
     height = 250 - margin.top - margin.bottom;
 
   const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
@@ -252,11 +252,11 @@ const createPlots = (out) => {
     .y(function(d) { return y(d.Accidents); });
 
     svg.append("text")
-    .attr("x", -55)
+    .attr("x", -40)
     .attr("y", height / 2)
     .attr("font-size", "10px")
     .text(`Accidents`)
-    .attr("transform", `rotate(-90 -55, ${height / 2})`)
+    .attr("transform", `rotate(-90 -40, ${height / 2})`)
 
     svg.append("text")
     .attr("x", width / 2)
@@ -305,8 +305,8 @@ const createPlots = (out) => {
   const plotWeather = (out) => {
     d3.select("#weather").selectAll("*").remove();
     const margin = {top: 10, right: 10, bottom: 10, left: 10},
-    width = 230 - margin.left - margin.right,
-    height = 230 - margin.top - margin.bottom;
+    width = 250 - margin.left - margin.right,
+    height = 250 - margin.top - margin.bottom;
 
     const svg = d3.select("#weather")
     .attr("width", width + margin.left + margin.right)
@@ -361,7 +361,7 @@ const createPlots = (out) => {
   }
 
   data.push({
-    "name": "others",
+    "name": "Others",
     "value": others,
     "percentage": Math.ceil(others * 100 / total)
   })
@@ -407,7 +407,7 @@ const createPlots = (out) => {
   const plotTime = (out) => {
     d3.select("#time_of_day").selectAll("*").remove();
     const margin = {top: 20, right: 20, bottom: 50, left: 80},
-    width = 450 - margin.left - margin.right,
+    width = 430 - margin.left - margin.right,
     height = 250 - margin.top - margin.bottom;
 
 const barPlot = d3.select("#time_of_day")
@@ -493,7 +493,6 @@ const barPlot = d3.select("#time_of_day")
 
   // Map 
   const plotMapMonth = (out) => {
-    d3.select("#map").selectAll("*").remove();
     let mapping = {
       AL: "Alabama",
       AK: "Alaska",
@@ -603,10 +602,12 @@ const barPlot = d3.select("#time_of_day")
         .attr("width", width)
         .attr("height", height)
         .attr("transform", "translate(-130, -80) scale(0.7)")
-      const g = svg.append("g");
+      var g;
       let statePlot;
-      setTimeout(() => {
-        d3.json("../../USA-states.json").then((us) => {
+      d3.json("../../USA-states.json").then((us) => {
+        setTimeout(() => {
+          d3.select("#map").selectAll("*").remove();
+          g = svg.append("g");
           let color = d3
             .scaleQuantile()
             .domain(Array.from(totalAccidentsByStates, (d) => d[1]))
@@ -657,8 +658,9 @@ const barPlot = d3.select("#time_of_day")
             .join("circle")
             .attr("transform", (d) => `translate(${projection([d[0], d[1]])})`)
             .attr("r", 1);
+          }, 500);
         });
-      }, 500);
+      
     
       // console.log(byStates)
       let colorPie = d3
@@ -674,8 +676,10 @@ const barPlot = d3.select("#time_of_day")
       function clicked(d) {
         let x, y, k;
         if (d && centered !== d) {
-          scatterPlot.attr("visibility", "hidden");
-          legendPlot.attr("visibility", "hidden");
+          // scatterPlot.attr("visibility", "hidden");
+          scatterPlot.attr("class", "hid");
+          legendPlot.attr("class", "hid");
+          // legendPlot.attr("visibility", "hidden");
           // legendPlot.remove()
           let filteredset = byStates[d.properties.name]
           plotTime(filteredset)
@@ -686,10 +690,15 @@ const barPlot = d3.select("#time_of_day")
           y = centroid[1];
           k = 3;
           centered = d;
-          if (statePlot != undefined) statePlot.remove();
+          if (statePlot != undefined) {
+            statePlot.remove();
+          }
+
           let store = {};
+
           filteredset.forEach((d) => {
-            if (!store.hasOwnProperty(d.Severity)) store[d.Severity] = 0;
+            if (!store.hasOwnProperty(d.Severity)) 
+              store[d.Severity] = 0;
             store[d.Severity]++;
           });
     
@@ -700,16 +709,32 @@ const barPlot = d3.select("#time_of_day")
           for (const [key, value] of Object.entries(store)) {
             total += value;
           }
+          let others = 0;
+
           for (const [key, value] of Object.entries(store)) {
-            const perc = Math.ceil((value * 100) / total);
-            data.push({
-              name: key,
-              value: value,
-              percentage: perc,
-            });
+            const perc = Math.ceil(value * 100 / total)
+            if(perc < 5) {
+              others += value
+              continue;
+            }
+            data.push(
+              {
+                "name": key,
+                "value": value,
+                "percentage": perc
+              }
+            )
           }
+
+          // data.push({
+          //   "name": "Others",
+          //   "value": others,
+          //   "percentage": Math.ceil(others * 100 / total)
+          // })
+
+
           const arcs = pie(data);
-    
+
           setTimeout(() => {
             // statePlot = svg
             //   .append("g")
@@ -749,11 +774,10 @@ const barPlot = d3.select("#time_of_day")
               .append("path")
               .attr("fill", (d) => colorPie(d.data.name))
               .attr("d", arc)
-              .append("title")
-              .text(
-                (d) => `${d.data.name} : ${d.data.value} : ${d.data.percentage}%`
-              );
-    
+              .on("mouseover", d => { tooltip.text(`${d.data.value}`); return tooltip.style("visibility", "visible"); })
+              .on("mousemove", () => { return tooltip.style("top", (d3.event.pageY - 10) + "px").style("left", (d3.event.pageX + 10) + "px"); })
+              .on("mouseout", (d) => { return tooltip.style("visibility", "hidden"); });
+              
             statePlot
               .append("g")
               .attr("font-family", "sans-serif")
@@ -772,6 +796,7 @@ const barPlot = d3.select("#time_of_day")
                     if(d.data.name == 4) return "Severe"
                     else if(d.data.name == 3) return "High"
                     else if(d.data.name == 2) return "Medium"
+                    // else if(d.data.name == "Others") return "Others"
                     else return "Low"
                   })
               )
@@ -782,20 +807,22 @@ const barPlot = d3.select("#time_of_day")
                   .attr("x", 0)
                   .attr("y", "0.7em")
                   .attr("fill-opacity", 0.7)
-                  .text((d) => `${d.data.value} : ${d.data.percentage}%`)
+                  .text((d) => `${d.data.percentage}%`)
               );
-          }, 700);
+          }, 600);
+          console.log(2);
         } else {
           setTimeout(() => {
-            scatterPlot.attr("visibility", "visible");
-            legendPlot.attr("visibility", "visible");
-          }, 750);
-          statePlot.attr("visibility", "hidden");
+            scatterPlot.attr("class", "vis");
+            legendPlot.attr("class", "vis");
+          }, 650);
+          statePlot.attr("class", "hid");
           statePlot.remove();
           x = width / 2;
           y = height / 2;
           k = 1;
           centered = null;
+          console.log(1)
         }
     
         g.selectAll("path").classed(
@@ -807,7 +834,7 @@ const barPlot = d3.select("#time_of_day")
         );
     
         g.transition()
-          .duration(750)
+          .duration(650)
           .attr(
             "transform",
             "translate(" +
@@ -858,8 +885,8 @@ const barPlot = d3.select("#time_of_day")
     plotTime(out[mon])
     plotWeather(out[mon])
     plotWeekly(out[mon])
-    // plotMonthly(out[mon])
   }
+  
   updatePlots(0)
 
   let stepSliderValueElement = document.getElementById('month');
@@ -870,7 +897,6 @@ const barPlot = d3.select("#time_of_day")
 
   stepSlider.noUiSlider.on('update', function (values, handle) {
       const mon = values[handle]-1;
-      console.log(`Updating month to ${mon+1}`)
       stepSliderValueElement.innerHTML = monthNames[mon];
       updatePlots(mon);
   });
