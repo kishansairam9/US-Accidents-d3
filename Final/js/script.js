@@ -1,6 +1,4 @@
-d3.csv("../../cleaned.csv").then(function(inp) {
-
-  const tooltip = d3.select("body")
+const tooltip = d3.select("body")
   .append("div")
   .style("position", "absolute")
   .style("z-index", "10")
@@ -9,12 +7,16 @@ d3.csv("../../cleaned.csv").then(function(inp) {
   .style("color", "#FFF")
   .style("padding", "5px")
 
+  const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
+
+d3.csv("../../cleaned.csv").then(function(tot) {
+
   const out = []
   for(let i=0; i<12; i++) {
     out.push([])
   }
 
-  const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
+  const inp = _.sample(tot, 100000);
 
   inp.forEach(function (d) {
     date = parseDate(d.Time)
@@ -35,6 +37,12 @@ d3.csv("../../cleaned.csv").then(function(inp) {
         .append("td")
         .text(function(d) { return d; });
   }
+
+  createPlots(out);
+});
+
+
+const createPlots = (out) => {
 
   // Weekly - line chart plot by days of week
   const plotWeekly = (out) => { 
@@ -347,8 +355,7 @@ const barPlot = d3.select("#time_of_day")
 
   // Map 
   const plotMapMonth = (out) => {
-    d3.select("#map").selectAll("circle").remove();
-    d3.select("#map").selectAll(".legend").remove();
+    d3.select("#map").selectAll("*").remove();
     let mapping = {
       AL: "Alabama",
       AK: "Alaska",
@@ -730,9 +737,10 @@ const barPlot = d3.select("#time_of_day")
 
   stepSlider.noUiSlider.on('update', function (values, handle) {
       const mon = values[handle]-1;
+      console.log(`Updating month to ${mon+1}`)
       stepSliderValueElement.innerHTML = monthNames[mon];
       updatePlots(mon);
   });
   
 
-});
+}
