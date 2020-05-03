@@ -24,6 +24,21 @@ d3.csv("../../cleaned.csv").then(function(out) {
   .style("color", "#FFF")
   .style("padding", "5px")
 
+  // Table of data
+  {
+    const show = _.sample(out, 100);
+
+    let tr = d3.select("tbody").selectAll("tr")
+      .data(show)
+      .enter().append("tr");
+  
+    tr.selectAll("td")
+        .data(d => {return [d.ID, d.Source, d.Severity, d.Time, d.Lat, d.Lng, d.Description, d.State, d.Weather, d.Object]})
+        .enter()
+        .append("td")
+        .text(function(d) { return d; });
+  }
+
   // Weekly - line chart plot by days of week
   { 
     const margin = {top: 60, right: 20, bottom: 50, left: 80},
