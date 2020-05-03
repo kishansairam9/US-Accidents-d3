@@ -9,3 +9,8 @@
 
 - Since `cleaned.csv` is being used to load data, we need to run server for it
 - Run `python3 -m http.server` in directory where `index.html` is present and open the URL given to view webpage
+
+## Note
+
+The page may be irresponsive for first few seconds after opening. This is because of loading whole data of csv using d3, 
+initially memory usage explodes. It comes to normal soon and page will work fine.
