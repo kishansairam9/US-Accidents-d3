@@ -166,7 +166,7 @@ const plotMonthly = (out) => {
 
 let inp;
 
-d3.csv("../../cleaned.csv").then(function (tot) {
+d3.csv("../cleaned.csv").then(function (tot) {
 
   const out = []
   for (let i = 0; i < 12; i++) {
@@ -678,7 +678,7 @@ const createPlots = (out) => {
       .attr("transform", "translate(-100, -60) scale(0.8)")
     var g;
     let statePlot;
-    d3.json("../../USA-states.json").then((us) => {
+    d3.json("../USA-states.json").then((us) => {
       setTimeout(() => {
         d3.select("#map").selectAll("*").remove();
         g = svg.append("g");
