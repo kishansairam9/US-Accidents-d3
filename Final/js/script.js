@@ -147,6 +147,8 @@ svg.selectAll(".weekly-values")
         .text(d => d.Accidents)
 }
 
+let inp;
+
 d3.csv("../../cleaned.csv").then(function(tot) {
 
   const out = []
@@ -154,7 +156,7 @@ d3.csv("../../cleaned.csv").then(function(tot) {
     out.push([])
   }
   plotMonthly(tot)
-  const inp = _.sample(tot, tot.length/10);
+  inp = _.sample(tot, tot.length/10);
 
   inp.forEach(function (d) {
     date = parseDate(d.Time)
@@ -186,7 +188,7 @@ const createPlots = (out) => {
   const plotWeekly = (out) => { 
     d3.select("#weekly").selectAll("*").remove();
     const margin = {top: 30, right: 20, bottom: 60, left: 55},
-    width = 250 - margin.left - margin.right,
+    width = 270 - margin.left - margin.right,
     height = 200 - margin.top - margin.bottom;
 
   const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
@@ -304,9 +306,9 @@ const createPlots = (out) => {
   // Weather - pie chart
   const plotWeather = (out) => {
     d3.select("#weather").selectAll("*").remove();
-    const margin = {top: 10, right: 10, bottom: 10, left: 10},
-    width = 250 - margin.left - margin.right,
-    height = 250 - margin.top - margin.bottom;
+    const margin = {top: 10, right: 10, bottom: 10, left: 20},
+    width = 260 - margin.left - margin.right,
+    height = 260 - margin.top - margin.bottom;
 
     const svg = d3.select("#weather")
     .attr("width", width + margin.left + margin.right)
@@ -314,6 +316,13 @@ const createPlots = (out) => {
   .append("g")
     .attr("transform", "translate(" + (width + margin.left + margin.right)/2 + "," + (height + margin.top + margin.bottom)/2 + ")");
     // .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    svg.append("text")
+    .attr("x", 15)
+    .attr("y", 125)
+    .attr("font-size", "10px")
+    .text(`Weather Conditions`)
+    .attr("text-anchor", "middle")
 
     let arc = d3.arc()
         .innerRadius(0)
@@ -882,17 +891,31 @@ const barPlot = d3.select("#time_of_day")
     }
   });
 
-  const wholePlot = () => {
-    plotTime(inp)
-    plotWeather(inp)
-    plotWeekly(inp)
+  let year = false, currMon;
+
+  const analysisPlots = (t) => {
+    plotTime(t)
+    plotWeather(t)
+    plotWeekly(t)
   }
+
+  const togglePlots = () => {
+    if(year) {
+      analysisPlots(out[currMon])
+    } else {
+      analysisPlots(inp)
+    }
+    year = !year
+  }
+
+  document.getElementById("toggle").onclick = function() {togglePlots()};
 
   const updatePlots = (mon) => {
     plotMapMonth(out[mon])
     plotTime(out[mon])
     plotWeather(out[mon])
     plotWeekly(out[mon])
+    currMon = mon;
   }
   
   updatePlots(0)

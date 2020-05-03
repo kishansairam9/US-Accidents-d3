@@ -61,7 +61,7 @@ body ::-webkit-scrollbar {
 }
 /*# sourceMappingURL=style.css.map */
 
-#weather text, #weather tspan{
+#weather text, #weather tspan, #weekly text{
   font-size: 8px !important;
 }
 
