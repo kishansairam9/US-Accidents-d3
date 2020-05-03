@@ -22,6 +22,14 @@ body ::-webkit-scrollbar {
   width: 6px;
 }
 
+.onlymap {
+  padding-right: 0 !important;
+}
+
+.rightones {
+  padding-left: 0 !important;
+}
+
 .ui.vertical.menu.sidebar-menu {
   margin-top: 40px !important;
   max-height: calc(100% - 40px) !important;
@@ -54,7 +62,7 @@ body ::-webkit-scrollbar {
 /*# sourceMappingURL=style.css.map */
 
 #weather text, #weather tspan{
-  font-size: 7px !important;
+  font-size: 8px !important;
 }
 
 .weekly-axis path,

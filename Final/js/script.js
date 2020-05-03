@@ -13,7 +13,7 @@ const tooltip = d3.select("body")
 const plotMonthly = (out) => { 
   d3.select("#monthly").selectAll("*").remove();
   const margin = {top: 60, right: 20, bottom: 50, left: 80},
-  width = 500 - margin.left - margin.right,
+  width = 550 - margin.left - margin.right,
   height = 250 - margin.top - margin.bottom;
 
 
@@ -185,9 +185,9 @@ const createPlots = (out) => {
   // Weekly - line chart plot by days of week
   const plotWeekly = (out) => { 
     d3.select("#weekly").selectAll("*").remove();
-    const margin = {top: 30, right: 20, bottom: 50, left: 55},
+    const margin = {top: 30, right: 20, bottom: 60, left: 55},
     width = 250 - margin.left - margin.right,
-    height = 250 - margin.top - margin.bottom;
+    height = 200 - margin.top - margin.bottom;
 
   const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
 
@@ -765,7 +765,12 @@ const barPlot = d3.select("#time_of_day")
             statePlot = svg
               .append("g")
               // .attr("stroke", "white")
-              .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+              .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")")
+              .on("click", () => {
+                tooltip.style("visibility", "hidden");
+                clicked();
+              })
+
             // .attr("visibility", "visible")
             statePlot
               .selectAll("path")
