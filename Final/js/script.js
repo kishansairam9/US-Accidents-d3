@@ -817,6 +817,9 @@ const barPlot = d3.select("#time_of_day")
           }, 600);
           console.log(2);
         } else {
+          plotTime(out)
+          plotWeather(out)
+          plotWeekly(out)
           setTimeout(() => {
             scatterPlot.attr("class", "vis");
             legendPlot.attr("class", "vis");
