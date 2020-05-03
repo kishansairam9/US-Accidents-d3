@@ -348,6 +348,7 @@ const barPlot = d3.select("#time_of_day")
   // Map 
   const plotMapMonth = (out) => {
     d3.select("#map").selectAll("circle").remove();
+    d3.select("#map").selectAll(".legend").remove();
     let mapping = {
       AL: "Alabama",
       AK: "Alaska",
@@ -477,6 +478,7 @@ const barPlot = d3.select("#time_of_day")
             .titleWidth(115);
           svg
             .append("g")
+            .attr("class", "legend")
             .attr(
               "transform",
               "translate(+" + (width - 150) + "," + (height - 200) + ")"

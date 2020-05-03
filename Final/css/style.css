@@ -54,7 +54,7 @@ body ::-webkit-scrollbar {
 /*# sourceMappingURL=style.css.map */
 
 #weather text, #weather tspan{
-  font-size: 8px !important;
+  font-size: 7px !important;
 }
 
 .weekly-axis path,
