@@ -7,7 +7,7 @@
 }
 
 .secrow {
-  margin-top: -200px !important
+  margin-top: -110px !important
 }
 
 /* #weather {
@@ -22,12 +22,17 @@ body ::-webkit-scrollbar {
   width: 6px;
 }
 
-.onlymap {
+/* .onlymap {
   padding-right: 0 !important;
 }
-
+*/
+/* 
 .rightones {
-  padding-left: 0 !important;
+  margin-top: -80 !important;
+}  */
+
+.onerow {
+  margin-top: -80 !important;
 }
 
 .ui.vertical.menu.sidebar-menu {
@@ -62,7 +67,7 @@ body ::-webkit-scrollbar {
 /*# sourceMappingURL=style.css.map */
 
 #weather text, #weather tspan, #weekly text{
-  font-size: 8px !important;
+  font-size: 12px !important;
 }
 
 .weekly-axis path,
@@ -70,6 +75,10 @@ body ::-webkit-scrollbar {
   fill: none;
   stroke: #000;
   shape-rendering: crispEdges;
+}
+
+.weekly-left-axis text {
+  opacity: 0;
 }
 
 .weekly-line {
