@@ -8,6 +8,144 @@ const tooltip = d3.select("body")
   .style("padding", "5px")
 
   const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
+// Monthly - line chart
+const plotMonthly = (out) => { 
+  d3.select("#monthly").selectAll("*").remove();
+  const margin = {top: 60, right: 20, bottom: 50, left: 80},
+  width = 450 - margin.left - margin.right,
+  height = 250 - margin.top - margin.bottom;
+
+const parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S");
+
+const svg = d3.select("#monthly")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+.append("g")
+  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+const monthwise = []
+// 0 -> Sunday to 6 -> Saturday
+for(let i=0; i<12; i++) {
+  monthwise.push(0)
+}
+
+out.forEach(function (d) {
+  date = parseDate(d.Time)
+  monthwise[date.getMonth()]++;
+})
+
+const data = [
+  {
+    "Month": "Jan",
+    "Accidents": monthwise[0]
+  },
+  {
+    "Month": "Feb",
+    "Accidents": monthwise[1]
+  },
+  {
+    "Month": "Mar",
+    "Accidents": monthwise[2]
+  },
+  {
+    "Month": "Apr",
+    "Accidents": monthwise[3]
+  },
+  {
+    "Month": "May",
+    "Accidents": monthwise[4]
+  },
+  {
+    "Month": "June",
+    "Accidents": monthwise[5]
+  },
+  {
+    "Month": "July",
+    "Accidents": monthwise[6]
+  },
+  {
+    "Month": "Aug",
+    "Accidents": monthwise[7]
+  },
+  {
+    "Month": "Sept",
+    "Accidents": monthwise[8]
+  },
+  {
+    "Month": "Oct",
+    "Accidents": monthwise[9]
+  },
+  {
+    "Month": "Nov",
+    "Accidents": monthwise[10]
+  },
+  {
+    "Month": "Dec",
+    "Accidents": monthwise[11]
+  }
+]
+
+const x = d3.scaleBand()
+      .range([0, width])
+      .domain(["Jan", "Feb", "Mar", "Apr", "May", "June", "July", "Aug", "Sept", "Oct", "Nov", "Dec"]);
+const y = d3.scaleLinear()
+          .range([height, 0])
+          .domain([0, d3.max(monthwise)]);
+
+const line = d3.line()
+  .x(function(d) { return x(d.Month) + x.bandwidth()/2; })
+  .y(function(d) { return y(d.Accidents); });
+
+  svg.append("text")
+  .attr("x", -55)
+  .attr("y", height / 2)
+  .attr("font-size", "10px")
+  .text(`Accidents`)
+  .attr("transform", `rotate(-90 -55, ${height / 2})`)
+
+  svg.append("text")
+  .attr("x", width / 2)
+  .attr("y", height + 35)
+  .attr("font-size", "10px")
+        .style("text-anchor", "middle")
+        .text(`Weekday`)
+
+svg.append("g")
+    .attr("class", "x weekly-axis")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x).ticks(width / 80).tickSizeOuter(0))
+
+
+svg.append("g")
+    .attr("class", "y weekly-axis")
+    .call(d3.axisLeft(y))
+  .append("text")
+
+
+svg.append("path")
+    .datum(data)
+    .attr("class", "weekly-line")
+    .attr("d", line);
+
+svg.selectAll(".weekly-dot")
+  .data(data)
+.enter().append("circle") 
+  .attr("class", "weekly-dot") 
+  .attr("cx", function(d) { return x(d.Month) + x.bandwidth()/2 })
+  .attr("cy", function(d) { return y(d.Accidents) })
+  .attr("r", 5)
+  
+svg.selectAll(".weekly-values")
+  .data(data)
+  .enter().append("text")
+  .attr("class", "weekly-values") 
+  .attr("x", d => {return x(d.Month) + x.bandwidth()/2})
+        .attr("y", d => {return y(d.Accidents) - 14})
+        .attr("font-size", "10px")
+        .style("text-anchor", "middle")
+        .text(d => d.Accidents)
+}
 
 d3.csv("../../cleaned.csv").then(function(tot) {
 
@@ -15,8 +153,8 @@ d3.csv("../../cleaned.csv").then(function(tot) {
   for(let i=0; i<12; i++) {
     out.push([])
   }
-
-  const inp = _.sample(tot, tot.length/2);
+  plotMonthly(tot)
+  const inp = _.sample(tot, tot.length/10);
 
   inp.forEach(function (d) {
     date = parseDate(d.Time)
@@ -433,9 +571,9 @@ const barPlot = d3.select("#time_of_day")
     let arc = d3
       .arc()
       .innerRadius(0)
-      .outerRadius(Math.min(width, height) / 2 - 1);
+      .outerRadius(Math.min(width, height) / 3 - 1);
     
-    const radius = (Math.min(width, height) / 2) * 0.8;
+    const radius = (Math.min(width, height) / 3) * 0.5;
     let arcLabel = d3.arc().innerRadius(radius).outerRadius(radius);
     
     pie = d3
@@ -458,21 +596,21 @@ const barPlot = d3.select("#time_of_day")
         .scale(1300)
         .translate([width / 2, height / 2]);
       const path = d3.geoPath();
-      let scatterPlot1;
+      var scatterPlot;
+      var legendPlot;
       const svg = d3
         .select("#map")
         .attr("width", width)
         .attr("height", height)
         .attr("transform", "translate(-130, -80) scale(0.7)")
       const g = svg.append("g");
-      let scatterPlot = svg.append("g");
       let statePlot;
       setTimeout(() => {
         d3.json("../../USA-states.json").then((us) => {
           let color = d3
             .scaleQuantile()
             .domain(Array.from(totalAccidentsByStates, (d) => d[1]))
-            .range(d3.schemeBlues[8]);
+            .range(d3.schemeBlues[5]);
           // console.log(us);
           let legend = d3
             .legendColor()
@@ -483,7 +621,7 @@ const barPlot = d3.select("#time_of_day")
             // .orient('horizontal')
             .title("Number of Accidents per state")
             .titleWidth(115);
-          svg
+          legendPlot = svg
             .append("g")
             .attr("class", "legend")
             .attr(
@@ -511,7 +649,7 @@ const barPlot = d3.select("#time_of_day")
             .datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b))
             .attr("id", "state-borders")
             .attr("d", path);
-          scatterPlot1 = svg
+          scatterPlot = svg
             .append("g")
             .attr("fill", "brown")
             .selectAll("circle")
@@ -523,10 +661,22 @@ const barPlot = d3.select("#time_of_day")
       }, 500);
     
       // console.log(byStates)
+      let colorPie = d3
+      .scaleQuantile()
+      .domain(["1","2","3","4"])
+      .range(
+        // d3
+        //   .quantize((t) => d3.interpolateSpectral(t * 0.8 + 0.1),4)
+        //   .reverse()
+        d3.schemeReds[4]
+      );
+
       function clicked(d) {
         let x, y, k;
         if (d && centered !== d) {
-          scatterPlot1.attr("visibility", "hidden");
+          scatterPlot.attr("visibility", "hidden");
+          legendPlot.attr("visibility", "hidden");
+          // legendPlot.remove()
           let filteredset = byStates[d.properties.name]
           plotTime(filteredset)
           plotWeather(filteredset)
@@ -539,8 +689,8 @@ const barPlot = d3.select("#time_of_day")
           if (statePlot != undefined) statePlot.remove();
           let store = {};
           filteredset.forEach((d) => {
-            if (!store.hasOwnProperty(d.Weather)) store[d.Weather] = 0;
-            store[d.Weather]++;
+            if (!store.hasOwnProperty(d.Severity)) store[d.Severity] = 0;
+            store[d.Severity]++;
           });
     
           data = [];
@@ -550,37 +700,14 @@ const barPlot = d3.select("#time_of_day")
           for (const [key, value] of Object.entries(store)) {
             total += value;
           }
-    
-          let others = 0;
-    
           for (const [key, value] of Object.entries(store)) {
             const perc = Math.ceil((value * 100) / total);
-            if (perc < 5) {
-              others += value;
-              continue;
-            }
             data.push({
               name: key,
               value: value,
               percentage: perc,
             });
           }
-    
-          data.push({
-            name: "others",
-            value: others,
-            percentage: Math.ceil((others * 100) / total),
-          });
-    
-          let colorPie = d3
-            .scaleOrdinal()
-            .domain(data.map((d) => d.name))
-            .range(
-              d3
-                .quantize((t) => d3.interpolateSpectral(t * 0.8 + 0.1), data.length)
-                .reverse()
-            );
-    
           const arcs = pie(data);
     
           setTimeout(() => {
@@ -620,7 +747,6 @@ const barPlot = d3.select("#time_of_day")
               .data(arcs)
               .enter()
               .append("path")
-              .attr("translate", "translate(600,300)")
               .attr("fill", (d) => colorPie(d.data.name))
               .attr("d", arc)
               .append("title")
@@ -631,7 +757,7 @@ const barPlot = d3.select("#time_of_day")
             statePlot
               .append("g")
               .attr("font-family", "sans-serif")
-              .attr("font-size", 10)
+              .attr("font-size", 20)
               .attr("text-anchor", "middle")
               .selectAll("text")
               .data(arcs)
@@ -642,7 +768,12 @@ const barPlot = d3.select("#time_of_day")
                   .append("tspan")
                   .attr("y", "-0.4em")
                   .attr("font-weight", "bold")
-                  .text((d) => d.data.name)
+                  .text((d) => {
+                    if(d.data.name == 4) return "Severe"
+                    else if(d.data.name == 3) return "High"
+                    else if(d.data.name == 2) return "Medium"
+                    else return "Low"
+                  })
               )
               .call((text) =>
                 text
@@ -656,7 +787,8 @@ const barPlot = d3.select("#time_of_day")
           }, 700);
         } else {
           setTimeout(() => {
-            scatterPlot1.attr("visibility", "visible");
+            scatterPlot.attr("visibility", "visible");
+            legendPlot.attr("visibility", "visible");
           }, 750);
           statePlot.attr("visibility", "hidden");
           statePlot.remove();
@@ -726,6 +858,7 @@ const barPlot = d3.select("#time_of_day")
     plotTime(out[mon])
     plotWeather(out[mon])
     plotWeekly(out[mon])
+    // plotMonthly(out[mon])
   }
   updatePlots(0)
 
